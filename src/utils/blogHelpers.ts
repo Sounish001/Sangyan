@@ -63,14 +63,14 @@ export const sortBlogsByDate = (blogs: Blog[], order: 'asc' | 'desc' = 'desc'): 
 };
 
 export const sortBlogsByPopularity = (blogs: Blog[]): Blog[] => {
-  return [...blogs].sort((a, b) => b.views - a.views);
+  return [...blogs].sort((a, b) => (b.views ?? 0) - (a.views ?? 0));
 };
 
 export const getTrendingBlogs = (blogs: Blog[], limit: number = 5): Blog[] => {
   return [...blogs]
     .sort((a, b) => {
-      const scoreA = a.likes * 2 + a.views;
-      const scoreB = b.likes * 2 + b.views;
+      const scoreA = (a.likes ?? 0) * 2 + (a.views ?? 0);
+      const scoreB = (b.likes ?? 0) * 2 + (b.views ?? 0);
       return scoreB - scoreA;
     })
     .slice(0, limit);

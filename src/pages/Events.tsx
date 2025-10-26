@@ -170,12 +170,13 @@ const Events: React.FC = () => {
     setFilteredEvents(result);
   }, [selectedType, searchQuery, events]);
 
-  const formatDate = (date: Date) => {
+  const formatDate = (date: string | Date) => {
+    const parsedDate = typeof date === 'string' ? new Date(date) : date;
     return new Intl.DateTimeFormat('en-US', {
       month: 'short',
       day: 'numeric',
       year: 'numeric'
-    }).format(new Date(date));
+    }).format(parsedDate);
   };
 
   const getTypeColor = (type: string) => {

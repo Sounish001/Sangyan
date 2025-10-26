@@ -504,7 +504,7 @@ const BlogList: React.FC = () => {
               >
                 {filteredBlogs.map((blog) => (
                   <motion.div key={blog.id} variants={fadeInUp}>
-                    <BlogCard blog={blog} viewMode={viewMode} />
+                    <BlogCard blog={blog} />
                   </motion.div>
                 ))}
               </motion.div>

@@ -227,7 +227,7 @@ const BlogDetail: React.FC = () => {
                   }`}
                 >
                   <Heart className={`w-4 h-4 ${isLiked ? 'fill-current' : ''}`} />
-                  {blog.likes + (isLiked ? 1 : 0)}
+                  {(blog.likes ?? 0) + (isLiked ? 1 : 0)}
                 </button>
 
                 <button

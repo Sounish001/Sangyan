@@ -58,7 +58,7 @@ interface ProfileData {
 }
 
 const Profile: React.FC = () => {
-  const { user, userRole, refreshUserData } = useAuth();
+  const { user, refreshUserData } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [loading, setLoading] = useState(true);
