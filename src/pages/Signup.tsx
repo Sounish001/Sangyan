@@ -5,7 +5,8 @@ import { doc, setDoc } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 import toast from 'react-hot-toast';
 import { FcGoogle } from 'react-icons/fc';
-import { HiMail, HiLockClosed, HiEye, HiEyeOff, HiUser } from 'react-icons/hi';
+import { HiMail, HiLockClosed, HiEye, HiEyeOff, HiUser, HiSparkles, HiArrowLeft } from 'react-icons/hi';
+import { Lightbulb } from 'lucide-react';
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -59,6 +60,14 @@ const Signup = () => {
         createdAt: new Date().toISOString(),
         role: 'member',
         membershipStatus: 'pending',
+        parasStones: 100, // Welcome bonus
+        parasHistory: [{
+          id: Date.now().toString(),
+          amount: 100,
+          type: 'earned',
+          reason: 'Welcome bonus for signing up!',
+          timestamp: new Date().toISOString()
+        }]
       });
     } catch (error) {
       console.error('Error creating user document:', error);
@@ -67,7 +76,6 @@ const Signup = () => {
 
   const handleEmailSignup = async (e: FormEvent) => {
     e.preventDefault();
-
     if (!validateForm()) return;
 
     setLoading(true);
@@ -78,19 +86,17 @@ const Signup = () => {
         formData.password
       );
 
-      // Update profile with display name
       await updateProfile(userCredential.user, {
         displayName: formData.name,
       });
 
-      // Create user document in Firestore
       await createUserDocument(userCredential.user.uid, formData.email, formData.name);
 
       toast.success('Account created successfully! 🎉');
       navigate('/');
     } catch (error: any) {
       console.error('Signup error:', error);
-
+      
       if (error.code === 'auth/email-already-in-use') {
         toast.error('Email already registered. Please login instead');
       } else if (error.code === 'auth/invalid-email') {
@@ -111,7 +117,6 @@ const Signup = () => {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
 
-      // Create user document in Firestore
       await createUserDocument(
         result.user.uid,
         result.user.email!,
@@ -122,7 +127,7 @@ const Signup = () => {
       navigate('/');
     } catch (error: any) {
       console.error('Google signup error:', error);
-
+      
       if (error.code === 'auth/popup-closed-by-user') {
         toast.error('Signup cancelled');
       } else if (error.code === 'auth/popup-blocked') {
@@ -138,116 +143,121 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 via-white to-blue-50 px-4 sm:px-6 lg:px-8 py-12">
-      <div className="max-w-md w-full space-y-8">
-        {/* Header */}
-        <div className="text-center">
-          <Link to="/" className="inline-block">
-            <h1 className="text-4xl font-bold text-indigo-600 mb-2">Sangyan</h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-cyan-900 flex items-center justify-center px-4 py-12 relative overflow-hidden">
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl -top-20 -left-20 animate-blob"></div>
+        <div className="absolute w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -bottom-20 -right-20 animate-blob animation-delay-2000"></div>
+        <div className="absolute w-96 h-96 bg-purple-500/10 rounded-full blur-3xl top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 animate-blob animation-delay-4000"></div>
+      </div>
+
+      {/* Main Container with Slide Animation */}
+      <div className="relative w-full max-w-md animate-slide-in-left">
+        {/* Logo Header */}
+        <div className="text-center mb-8 animate-fade-in-down">
+          <Link to="/" className="inline-flex items-center space-x-3 group pt-8">
+            <div className="relative">
+              <div className="absolute inset-0 bg-cyan-400 rounded-xl blur-md opacity-50 group-hover:opacity-75 transition-opacity"></div>
+              <div className="relative bg-gradient-to-br from-cyan-400 to-blue-500 p-3 rounded-xl shadow-lg">
+                <Lightbulb className="w-8 h-8 text-white" />
+              </div>
+            </div>
+            <span className="text-3xl font-bold bg-gradient-to-r from-white to-cyan-300 bg-clip-text text-transparent">
+              Sangyan
+            </span>
+            <HiSparkles className="w-6 h-6 text-cyan-400 animate-pulse" />
           </Link>
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Create your account</h2>
-          <p className="text-gray-600">Join the IISER Berhampur community</p>
+          <h2 className="mt-6 text-2xl font-bold text-white">Create Your Account</h2>
+          <p className="mt-2 text-gray-400">Join the IISER Berhampur community</p>
         </div>
 
-        {/* Signup Form Card */}
-        <div className="bg-white rounded-2xl shadow-xl p-8 space-y-6">
+        {/* Signup Card */}
+        <div className="bg-gray-800/50 backdrop-blur-xl rounded-2xl shadow-2xl border border-cyan-500/20 p-8 animate-fade-in-up animation-delay-200">
           {/* Google Signup Button */}
           <button
             onClick={handleGoogleSignup}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 px-4 py-3 border-2 border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center space-x-3 px-6 py-3 bg-white hover:bg-gray-50 text-gray-800 font-medium rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <FcGoogle className="text-2xl" />
-            Continue with Google
+            <FcGoogle className="w-6 h-6" />
+            <span>Continue with Google</span>
           </button>
 
           {/* Divider */}
-          <div className="relative">
+          <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300" />
+              <div className="w-full border-t border-gray-600"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500 font-medium">Or sign up with email</span>
+              <span className="px-4 bg-gray-800/50 text-gray-400">Or sign up with email</span>
             </div>
           </div>
 
           {/* Email/Password Form */}
-          <form onSubmit={handleEmailSignup} className="space-y-4">
+          <form onSubmit={handleEmailSignup} className="space-y-5">
             {/* Name Input */}
             <div>
-              <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Full Name
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HiUser className="h-5 w-5 text-gray-400" />
-                </div>
+                <HiUser className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  id="name"
-                  name="name"
                   type="text"
-                  autoComplete="name"
-                  required
+                  name="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                   placeholder="John Doe"
+                  className="w-full pl-12 pr-4 py-3 bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                  required
                 />
               </div>
             </div>
 
             {/* Email Input */}
             <div>
-              <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Email address
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HiMail className="h-5 w-5 text-gray-400" />
-                </div>
+                <HiMail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  id="email"
-                  name="email"
                   type="email"
-                  autoComplete="email"
-                  required
+                  name="email"
                   value={formData.email}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                   placeholder="you@example.com"
+                  className="w-full pl-12 pr-4 py-3 bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                  required
                 />
               </div>
             </div>
 
             {/* Password Input */}
             <div>
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HiLockClosed className="h-5 w-5 text-gray-400" />
-                </div>
+                <HiLockClosed className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  id="password"
-                  name="password"
                   type={showPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  required
+                  name="password"
                   value={formData.password}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                   placeholder="••••••••"
+                  className="w-full pl-12 pr-12 py-3 bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                  required
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                 >
                   {showPassword ? (
-                    <HiEyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    <HiEyeOff className="w-5 h-5" />
                   ) : (
-                    <HiEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    <HiEye className="w-5 h-5" />
                   )}
                 </button>
               </div>
@@ -255,46 +265,42 @@ const Signup = () => {
 
             {/* Confirm Password Input */}
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-300 mb-2">
                 Confirm Password
               </label>
               <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <HiLockClosed className="h-5 w-5 text-gray-400" />
-                </div>
+                <HiLockClosed className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <input
-                  id="confirmPassword"
-                  name="confirmPassword"
                   type={showConfirmPassword ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  required
+                  name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors"
                   placeholder="••••••••"
+                  className="w-full pl-12 pr-12 py-3 bg-gray-700/50 border border-gray-600 text-white placeholder-gray-400 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all"
+                  required
                 />
                 <button
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
                 >
                   {showConfirmPassword ? (
-                    <HiEyeOff className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    <HiEyeOff className="w-5 h-5" />
                   ) : (
-                    <HiEye className="h-5 w-5 text-gray-400 hover:text-gray-600" />
+                    <HiEye className="w-5 h-5" />
                   )}
                 </button>
               </div>
             </div>
 
             {/* Terms and Conditions */}
-            <div className="text-xs text-gray-500">
+            <div className="text-sm text-gray-400">
               By signing up, you agree to our{' '}
-              <Link to="/terms" className="text-indigo-600 hover:text-indigo-500">
+              <Link to="/terms" className="text-cyan-400 hover:text-cyan-300">
                 Terms of Service
               </Link>{' '}
               and{' '}
-              <Link to="/privacy" className="text-indigo-600 hover:text-indigo-500">
+              <Link to="/privacy" className="text-cyan-400 hover:text-cyan-300">
                 Privacy Policy
               </Link>
             </div>
@@ -303,39 +309,34 @@ const Signup = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
+              className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-cyan-500/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
             >
               {loading ? (
-                <div className="flex items-center gap-2">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                <span className="flex items-center justify-center">
+                  <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
                   Creating account...
-                </div>
+                </span>
               ) : (
                 'Create account'
               )}
             </button>
           </form>
-        </div>
 
-        {/* Login Link */}
-        <p className="text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link
-            to="/login"
-            className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors"
-          >
-            Sign in
-          </Link>
-        </p>
-
-        {/* Back to Home */}
-        <div className="text-center">
-          <Link
-            to="/"
-            className="text-sm text-gray-500 hover:text-gray-700 transition-colors"
-          >
-            ← Back to homepage
-          </Link>
+          {/* Login Link with Slide Animation */}
+          <div className="mt-6 text-center">
+            <p className="text-gray-400">
+              Already have an account?{' '}
+              <Link
+                to="/login"
+                className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors"
+              >
+                Sign in
+              </Link>
+            </p>
+          </div>
         </div>
       </div>
     </div>

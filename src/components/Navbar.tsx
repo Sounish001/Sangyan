@@ -1,13 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Lightbulb, Menu, X, Search, Sparkles } from 'lucide-react';
-import { SANGYAN_CONFIG } from '../config/sangyan.config';
+import React, { useState, useEffect, useRef } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import {
+  Lightbulb,
+  Menu,
+  X,
+  Search,
+  Sparkles,
+  LogOut,
+  User as UserIcon,
+  Settings,
+  ChevronDown,
+  UserCircle,
+  Bell,
+  Gem
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useAuth } from '../context/AuthContext';
+import toast from 'react-hot-toast';
 
 const Navbar: React.FC = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isProfileDropdownOpen, setIsProfileDropdownOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, userData, signOut } = useAuth();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -17,207 +36,416 @@ const Navbar: React.FC = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { name: 'Home', path: `${SANGYAN_CONFIG.basePath}/` },
-    { name: 'Blogs', path: `${SANGYAN_CONFIG.basePath}/blogs` },
-    { name: 'Events', path: `${SANGYAN_CONFIG.basePath}/events` },
-    { name: 'Resources', path: `${SANGYAN_CONFIG.basePath}/resources` },
-    { name: 'About', path: `${SANGYAN_CONFIG.basePath}/about` },
-    { name: 'Team', path: `${SANGYAN_CONFIG.basePath}/team` },
-    { name: 'Membership', path: `${SANGYAN_CONFIG.basePath}/membership` },
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsProfileDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const publicLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'About', path: '/about' },
+    { name: 'Team', path: '/team' },
   ];
 
+  const authenticatedLinks = [
+    { name: 'Home', path: '/' },
+    { name: 'Blogs', path: '/blog' },
+    { name: 'Events', path: '/events' },
+    { name: 'Resources', path: '/resources' },
+    { name: 'About', path: '/about' },
+    { name: 'Team', path: '/team' },
+    { name: 'Membership', path: '/membership' },
+  ];
+
+  const navLinks = user ? authenticatedLinks : publicLinks;
   const isActive = (path: string) => location.pathname === path;
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      setIsProfileDropdownOpen(false);
+      toast.success('Signed out successfully');
+      navigate('/');
+    } catch (error) {
+      toast.error('Failed to sign out');
+    }
+  };
+
+  const handleProfileClick = () => {
+    navigate('/profile');
+    setIsProfileDropdownOpen(false);
+  };
+
+  const handleSettingsClick = () => {
+    navigate('/settings');
+    setIsProfileDropdownOpen(false);
+  };
+
+  // Safe getter for Paras Stones with default value
+  const parasStones = userData?.parasStones ?? 0;
+  const rupeeValue = (parasStones / 100).toFixed(2);
 
   return (
     <>
-      <nav
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-          isScrolled
-            ? 'bg-slate-900/95 backdrop-blur-lg shadow-lg shadow-cyan-500/10 animate-fade-in-down'
-            : 'bg-transparent'
-        }`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            {/* Logo with Enhanced Animation */}
-            <Link
-              to={`${SANGYAN_CONFIG.basePath}/`}
-              className="flex items-center gap-2 group"
-            >
-              <div className="relative">
-                {/* Glow effect behind logo */}
-                <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg blur-lg opacity-50 group-hover:opacity-75 transition-all duration-300" />
-                {/* Logo container */}
-                <div className="relative p-2 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg shadow-lg group-hover:shadow-cyan-500/50 transform group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
-                  <Lightbulb className="w-6 h-6 text-white" />
-                </div>
-              </div>
-              <span className="text-xl font-bold text-white group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-blue-400 transition-all duration-300">
-                Sangyan
-              </span>
-              <Sparkles className="w-4 h-4 text-cyan-400 animate-pulse" />
-            </Link>
-
-            {/* Desktop Navigation with Staggered Animation */}
-            <div className="hidden md:flex items-center gap-1">
-              {navLinks.map((link, index) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  className={`relative px-4 py-2 rounded-lg font-medium transition-all duration-300 transform hover:scale-105 animate-fade-in-down ${
-                    isActive(link.path)
-                      ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-800'
-                  }`}
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                >
-                  <span className="relative z-10">{link.name}</span>
-                  {/* Animated underline for non-active items */}
-                  {!isActive(link.path) && (
-                    <span className="absolute bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0.5 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full group-hover:w-3/4 transition-all duration-300" />
-                  )}
-                </Link>
-              ))}
-            </div>
-
-            {/* Right Actions */}
-            <div className="flex items-center gap-2">
-              {/* Search Button with Pulse Animation */}
-              <button
-                onClick={() => setIsSearchOpen(true)}
-                className="p-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/50 text-slate-400 hover:text-cyan-400 transition-all duration-300 transform hover:scale-110 animate-fade-in"
-              >
-                <Search className="w-4 h-4" />
-              </button>
-
-              {/* Mobile Menu Button */}
-              <button
-                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden p-2 rounded-lg bg-slate-800/50 hover:bg-slate-800 border border-slate-700 hover:border-cyan-500/50 text-slate-400 hover:text-white transition-all duration-300 transform hover:scale-110"
-              >
-                {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
-        </div>
-
-        {/* Mobile Menu with Slide Animation */}
-        {isMobileMenuOpen && (
-          <div className="md:hidden bg-slate-900/98 backdrop-blur-xl border-t border-slate-800 animate-slide-down">
-            <div className="px-4 py-4 space-y-2">
-              {navLinks.map((link, index) => (
-                <Link
-                  key={link.path}
-                  to={link.path}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className={`block px-4 py-3 rounded-lg font-medium text-sm transition-all duration-300 transform hover:scale-102 animate-fade-in-up ${
-                    isActive(link.path)
-                      ? 'bg-gradient-to-r from-cyan-600 to-blue-600 text-white shadow-lg'
-                      : 'text-slate-300 hover:bg-slate-800 hover:text-white'
-                  }`}
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                >
-                  {link.name}
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-      </nav>
-
-      {/* Search Modal with Backdrop Blur */}
+      {/* Search Modal */}
       {isSearchOpen && (
-        <div
-          className="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm flex items-start justify-center pt-20 px-4 animate-fade-in"
-          onClick={() => setIsSearchOpen(false)}
-        >
-          <div
-            className="w-full max-w-2xl bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-2xl shadow-cyan-500/20 animate-slide-down transform hover:scale-102 transition-transform duration-300"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center gap-3 mb-4">
-              <Search className="w-5 h-5 text-cyan-400 animate-pulse" />
-              <input
-                type="text"
-                placeholder="Search blogs, events, resources..."
-                autoFocus
-                className="flex-1 bg-transparent text-white placeholder-slate-500 outline-none text-sm focus:placeholder-slate-400 transition-colors"
-              />
-              <button
-                onClick={() => setIsSearchOpen(false)}
-                className="p-2 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-all duration-300 transform hover:rotate-90"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-            <div className="text-xs text-slate-500">
-              Press <kbd className="px-2 py-1 bg-slate-800 rounded text-slate-400">ESC</kbd> to close
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-start justify-center pt-20">
+          <div className="bg-gradient-to-br from-slate-900 to-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl mx-4 border border-blue-500/20">
+            <div className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Search className="w-5 h-5 text-blue-400" />
+                <input
+                  type="text"
+                  placeholder="Search Sangyan..."
+                  className="flex-1 bg-transparent text-white text-sm placeholder-slate-400 outline-none"
+                  autoFocus
+                />
+                <button
+                  onClick={() => setIsSearchOpen(false)}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+              <div className="text-xs text-slate-400">
+                Press <kbd className="px-2 py-1 bg-slate-700 rounded">ESC</kbd> to close
+              </div>
             </div>
           </div>
         </div>
       )}
 
-      {/* Custom Animations */}
-      <style>{`
-        @keyframes fade-in-down {
-          from {
-            opacity: 0;
-            transform: translateY(-10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+      {/* Navbar */}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+          isScrolled
+            ? 'bg-slate-900/95 backdrop-blur-md shadow-lg border-b border-blue-500/20'
+            : 'bg-transparent'
+        }`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2 group">
+              <div className="relative">
+                <Lightbulb className="w-7 h-7 text-blue-400 transition-transform group-hover:rotate-12 group-hover:scale-110" />
+                <Sparkles className="w-3 h-3 text-yellow-400 absolute -top-1 -right-1 animate-pulse" />
+              </div>
+              <span className="text-lg font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                Sangyan
+              </span>
+            </Link>
 
-        @keyframes slide-down {
-          from {
-            opacity: 0;
-            transform: translateY(-20px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+            {/* Desktop Navigation */}
+            <div className="hidden md:flex items-center gap-1">
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  className={`relative px-3 py-2 text-sm font-medium transition-all duration-200 rounded-lg group ${
+                    isActive(link.path)
+                      ? 'text-blue-400'
+                      : 'text-slate-300 hover:text-white'
+                  }`}
+                >
+                  <span className="relative z-10">{link.name}</span>
+                  {isActive(link.path) && (
+                    <div className="absolute inset-0 bg-blue-500/10 rounded-lg" />
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-blue-500/10 to-blue-500/0 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+              ))}
+            </div>
 
-        @keyframes fade-in-up {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
+            {/* Right Section */}
+            <div className="hidden md:flex items-center gap-3">
+              {/* Paras Stones Display - Only for logged in users with userData loaded */}
+              {user && userData && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-400/30 rounded-full cursor-pointer hover:border-amber-400/50 transition-all"
+                  onClick={() => navigate('/paras-wallet')}
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                >
+                  <motion.div
+                    animate={{
+                      rotate: [0, 10, -10, 0],
+                      scale: [1, 1.1, 1.1, 1]
+                    }}
+                    transition={{
+                      duration: 2,
+                      repeat: Infinity,
+                      repeatDelay: 3
+                    }}
+                  >
+                    <Gem className="w-5 h-5 text-amber-400" />
+                  </motion.div>
+                  <div className="flex flex-col items-start">
+                    <span className="text-xs text-amber-300 font-medium">Paras Stones</span>
+                    <span className="text-sm font-bold text-amber-100">
+                      {parasStones.toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="text-xs text-amber-300/60 ml-1">
+                    ≈ ₹{rupeeValue}
+                  </div>
+                </motion.div>
+              )}
 
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-          }
-          to {
-            opacity: 1;
-          }
-        }
+              {/* Search Button */}
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="p-2 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all duration-200"
+              >
+                <Search className="w-5 h-5" />
+              </button>
 
-        .animate-fade-in-down {
-          animation: fade-in-down 0.3s ease-out;
-        }
+              {user ? (
+                /* Profile Dropdown */
+                <div className="relative" ref={dropdownRef}>
+                  <button
+                    onClick={() => setIsProfileDropdownOpen(!isProfileDropdownOpen)}
+                    className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all duration-200"
+                  >
+                    <div className="w-7 h-7 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 flex items-center justify-center">
+                      <UserIcon className="w-4 h-4 text-white" />
+                    </div>
+                    <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isProfileDropdownOpen ? 'rotate-180' : ''}`} />
+                  </button>
 
-        .animate-slide-down {
-          animation: slide-down 0.3s ease-out;
-        }
+                  {/* Dropdown Menu */}
+                  <AnimatePresence>
+                    {isProfileDropdownOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute right-0 mt-2 w-64 bg-slate-900 border border-blue-500/20 rounded-xl shadow-2xl overflow-hidden"
+                      >
+                        {/* User Info */}
+                        <div className="px-4 py-3 border-b border-slate-800">
+                          <p className="text-sm font-medium text-white truncate">
+                            {user.email}
+                          </p>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            Sangyan Member
+                          </p>
+                        </div>
 
-        .animate-fade-in-up {
-          animation: fade-in-up 0.3s ease-out;
-        }
+                        {/* Paras Stones Summary */}
+                        {userData && (
+                          <div className="px-4 py-3 bg-gradient-to-r from-amber-500/10 to-yellow-500/10 border-b border-slate-800">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2">
+                                <Gem className="w-4 h-4 text-amber-400" />
+                                <span className="text-xs text-amber-300 font-medium">Paras Stones</span>
+                              </div>
+                              <span className="text-sm font-bold text-amber-100">
+                                {parasStones.toLocaleString()}
+                              </span>
+                            </div>
+                            <p className="text-xs text-amber-300/60 mt-1">
+                              ≈ ₹{rupeeValue}
+                            </p>
+                          </div>
+                        )}
 
-        .animate-fade-in {
-          animation: fade-in 0.3s ease-out;
-        }
-      `}</style>
+                        {/* Menu Items */}
+                        <div className="py-1">
+                          <button
+                            onClick={handleProfileClick}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-colors"
+                          >
+                            <UserCircle className="w-4 h-4" />
+                            <span>Profile</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              navigate('/paras-wallet');
+                              setIsProfileDropdownOpen(false);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-colors"
+                          >
+                            <Gem className="w-4 h-4 text-amber-400" />
+                            <span>Paras Wallet</span>
+                          </button>
+
+                          <button
+                            onClick={handleSettingsClick}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-colors"
+                          >
+                            <Settings className="w-4 h-4" />
+                            <span>Settings</span>
+                          </button>
+
+                          <button
+                            onClick={() => {
+                              navigate('/notifications');
+                              setIsProfileDropdownOpen(false);
+                            }}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-slate-300 hover:text-white hover:bg-slate-800/50 transition-colors"
+                          >
+                            <Bell className="w-4 h-4" />
+                            <span>Notifications</span>
+                          </button>
+                        </div>
+
+                        {/* Sign Out */}
+                        <div className="py-1 border-t border-slate-800">
+                          <button
+                            onClick={handleSignOut}
+                            className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors"
+                          >
+                            <LogOut className="w-4 h-4" />
+                            <span>Sign Out</span>
+                          </button>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              ) : (
+                /* Sign In Button */
+                <Link
+                  to="/signin"
+                  className="px-4 py-2 text-sm font-medium text-white bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all duration-200 shadow-lg shadow-blue-500/25"
+                >
+                  Sign In
+                </Link>
+              )}
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="md:hidden p-2 text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all"
+            >
+              {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+            </button>
+          </div>
+        </div>
+
+        {/* Mobile Menu */}
+        {isMobileMenuOpen && (
+          <div className="md:hidden bg-slate-900/98 backdrop-blur-md border-t border-blue-500/20 shadow-xl">
+            <div className="px-4 py-4 space-y-1">
+              {/* Paras Stones Display Mobile */}
+              {user && userData && (
+                <div
+                  onClick={() => {
+                    navigate('/paras-wallet');
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-400/30 rounded-lg mb-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <Gem className="w-5 h-5 text-amber-400" />
+                    <div>
+                      <p className="text-xs text-amber-300 font-medium">Paras Stones</p>
+                      <p className="text-sm font-bold text-amber-100">
+                        {parasStones.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                  <span className="text-xs text-amber-300/60">
+                    ≈ ₹{rupeeValue}
+                  </span>
+                </div>
+              )}
+
+              {navLinks.map((link) => (
+                <Link
+                  key={link.path}
+                  to={link.path}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className={`block px-4 py-3 text-sm font-medium rounded-lg transition-all ${
+                    isActive(link.path)
+                      ? 'text-blue-400 bg-blue-500/10'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-800/50'
+                  }`}
+                >
+                  {link.name}
+                </Link>
+              ))}
+
+              {user ? (
+                <div className="pt-3 mt-3 border-t border-slate-800 space-y-1">
+                  <button
+                    onClick={() => {
+                      navigate('/profile');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all"
+                  >
+                    <UserCircle className="w-5 h-5" />
+                    <span>Profile</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      navigate('/paras-wallet');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all"
+                  >
+                    <Gem className="w-5 h-5 text-amber-400" />
+                    <span>Paras Wallet</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      navigate('/settings');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all"
+                  >
+                    <Settings className="w-5 h-5" />
+                    <span>Settings</span>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      navigate('/notifications');
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-300 hover:text-white hover:bg-slate-800/50 rounded-lg transition-all"
+                  >
+                    <Bell className="w-5 h-5" />
+                    <span>Notifications</span>
+                  </button>
+
+                  <button
+                    onClick={handleSignOut}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg transition-all"
+                  >
+                    <LogOut className="w-5 h-5" />
+                    <span>Sign Out</span>
+                  </button>
+                </div>
+              ) : (
+                <div className="pt-3 mt-3 border-t border-slate-800">
+                  <Link
+                    to="/signin"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block px-4 py-3 text-sm font-medium text-center text-white bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg hover:from-blue-600 hover:to-cyan-600 transition-all"
+                  >
+                    Sign In
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </nav>
     </>
   );
 };

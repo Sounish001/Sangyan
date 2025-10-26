@@ -81,47 +81,38 @@ const upcomingEvents: Event[] = [
   }
 ];
 
-// Animation variants with proper Variants typing
+// Animation variants
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 60 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { duration: 0.6 }
-  }
-};
-
-const fadeInDown: Variants = {
-  hidden: { opacity: 0, y: -60 },
-  visible: { 
-    opacity: 1, 
-    y: 0,
-    transition: { duration: 0.6 }
-  }
-};
-
-const fadeInLeft: Variants = {
-  hidden: { opacity: 0, x: -60 },
-  visible: { 
-    opacity: 1, 
-    x: 0,
-    transition: { duration: 0.6 }
+    transition: { duration: 0.8, ease: "easeOut" }
   }
 };
 
 const fadeInRight: Variants = {
   hidden: { opacity: 0, x: 60 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     x: 0,
-    transition: { duration: 0.6 }
+    transition: { duration: 0.8, ease: "easeOut" }
+  }
+};
+
+const fadeInDown: Variants = {
+  hidden: { opacity: 0, y: -40 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.6, ease: "easeOut" }
   }
 };
 
 const scaleIn: Variants = {
   hidden: { opacity: 0, scale: 0.8 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     scale: 1,
     transition: { duration: 0.5 }
   }
@@ -132,8 +123,8 @@ const staggerContainer: Variants = {
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2
+      staggerChildren: 0.15,
+      delayChildren: 0.3
     }
   }
 };
@@ -147,7 +138,7 @@ const AnimatedSection: React.FC<{ children: React.ReactNode; className?: string 
     <motion.div
       ref={ref}
       initial="hidden"
-      animate={isInView ? 'visible' : 'hidden'}
+      animate={isInView ? "visible" : "hidden"}
       variants={fadeInUp}
       className={className}
     >
@@ -159,22 +150,25 @@ const AnimatedSection: React.FC<{ children: React.ReactNode; className?: string 
 const SangyanHome: React.FC = () => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const { scrollYProgress } = useScroll();
-  const heroRef = useRef(null);
+  const heroRef = useRef<HTMLDivElement>(null);
 
-  // Parallax effects
-  const yHero = useTransform(scrollYProgress, [0, 1], [0, 300]);
-  const opacityHero = useTransform(scrollYProgress, [0, 0.3], [1, 0]);
-  const scaleHero = useTransform(scrollYProgress, [0, 0.3], [1, 0.95]);
+  // Parallax effects for hero section
+  const yHero = useTransform(scrollYProgress, [0, 0.5], [0, 150]);
+  const opacityHero = useTransform(scrollYProgress, [0, 0.4], [1, 0]);
 
   useEffect(() => {
     const video = videoRef.current;
     if (!video) return;
 
+    const playVideo = () => {
+      video.play().catch(err => console.log('Autoplay prevented:', err));
+    };
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            video.play().catch(err => console.log('Autoplay prevented:', err));
+            playVideo();
           } else {
             video.pause();
           }
@@ -184,6 +178,8 @@ const SangyanHome: React.FC = () => {
     );
 
     observer.observe(video);
+    playVideo();
+
     return () => observer.disconnect();
   }, []);
 
@@ -199,553 +195,377 @@ const SangyanHome: React.FC = () => {
       icon: BookOpen,
       title: 'Research Blogs',
       description: 'In-depth articles exploring cutting-edge research across all scientific disciplines.',
-      link: `${SANGYAN_CONFIG.basePath}/blogs`
+      link: '/blog'
     },
     {
       icon: Calendar,
       title: 'Expert Talks & Workshops',
       description: 'Learn from leading researchers through engaging talks and hands-on workshops.',
-      link: `${SANGYAN_CONFIG.basePath}/events`
+      link: '/events'
     },
     {
       icon: Lightbulb,
       title: 'Learning Resources',
       description: 'Access curated materials, notes, and resources for continuous learning.',
-      link: `${SANGYAN_CONFIG.basePath}/resources`
+      link: '/resources'
     },
     {
       icon: Users,
       title: 'Collaborative Community',
       description: 'Connect with curious minds from top institutes across India.',
-      link: `${SANGYAN_CONFIG.basePath}/about`
+      link: '/about'
     }
   ];
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] overflow-x-hidden">
+    <>
       <Navbar />
-
-      {/* Fixed Video Background Container */}
-      <motion.div 
-        className="fixed top-0 left-0 w-full h-screen z-0"
-        style={{ opacity: opacityHero }}
-      >
-        <video
-          ref={videoRef}
-          autoPlay
-          muted
-          loop
-          playsInline
-          className="absolute top-0 left-0 w-full h-full object-cover scale-105"
-        >
-          <source src="/170082-842720202_large.mp4" type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
-
-        {/* Enhanced Gradient Overlay with Vignette */}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/50 to-[#0a0a0a]" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
-
-        {/* Animated Particles Effect */}
-        <div className="absolute inset-0 opacity-30">
-          {[...Array(8)].map((_, i) => (
-            <motion.div
-              key={i}
-              className={`absolute w-2 h-2 bg-cyan-400 rounded-full`}
-              style={{
-                top: `${Math.random() * 100}%`,
-                left: `${Math.random() * 100}%`,
-              }}
-              animate={{
-                y: [0, -30, 0],
-                x: [0, Math.random() * 20 - 10, 0],
-                opacity: [0.3, 0.7, 0.3],
-              }}
-              transition={{
-                duration: 3 + Math.random() * 2,
-                repeat: Infinity,
-                delay: Math.random() * 2,
-              }}
-            />
-          ))}
-        </div>
-      </motion.div>
-
-      {/* Scrollable Content Container */}
-      <div className="relative z-10">
-        {/* Hero Content Section with Enhanced Animations */}
-        <motion.section 
-          ref={heroRef}
-          className="relative h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 text-center"
-          style={{ y: yHero, scale: scaleHero }}
-        >
-          {/* Animated blobs in background */}
-          <motion.div 
-            className="absolute top-20 left-10 w-72 h-72 bg-cyan-500/20 rounded-full mix-blend-multiply filter blur-xl"
-            animate={{
-              x: [0, 30, 0],
-              y: [0, -50, 0],
-              scale: [1, 1.1, 1],
-            }}
-            transition={{
-              duration: 8,
-              repeat: Infinity,
-            }}
-          />
-          <motion.div 
-            className="absolute top-40 right-10 w-72 h-72 bg-blue-500/20 rounded-full mix-blend-multiply filter blur-xl"
-            animate={{
-              x: [0, -40, 0],
-              y: [0, 40, 0],
-              scale: [1, 1.15, 1],
-            }}
-            transition={{
-              duration: 10,
-              repeat: Infinity,
-              delay: 1
-            }}
-          />
-          <motion.div 
-            className="absolute -bottom-8 left-1/2 w-72 h-72 bg-teal-500/20 rounded-full mix-blend-multiply filter blur-xl"
-            animate={{
-              x: [0, 20, 0],
-              y: [0, -30, 0],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{
-              duration: 12,
-              repeat: Infinity,
-              delay: 2
-            }}
-          />
-
-          <div className="relative max-w-5xl mx-auto space-y-6">
-            {/* Floating Badge with Sparkles */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ 
-                duration: 0.5, 
-                delay: 0.2,
-                type: 'spring',
-                stiffness: 200
-              }}
+      
+      <div className="relative min-h-screen">
+        {/* Hero Section with Bright Video Background */}
+        <section className="relative min-h-screen overflow-hidden">
+          {/* Bright Video Background */}
+          <div className="absolute inset-0 z-0">
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover brightness-110"
+              loop
+              muted
+              playsInline
+              autoPlay
             >
-              <motion.div 
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-cyan-500/10 backdrop-blur-md border border-cyan-500/30 text-cyan-300 text-sm font-medium mb-4"
-                animate={{
-                  scale: [1, 1.05, 1]
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                }}
-                whileHover={{ scale: 1.05 }}
-              >
+              <source src="/bg_video_4.mp4" type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+            
+            {/* Lighter Gradient Overlay - Only for Right Side Text Readability */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-950/20 to-slate-950/60" />
+            <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent" />
+            
+            {/* Magical Floating Particles */}
+            <div className="absolute inset-0 overflow-hidden pointer-events-none">
+              {[...Array(15)].map((_, i) => (
                 <motion.div
-                  animate={{ rotate: 360 }}
-                  transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                >
-                  <Sparkles className="w-4 h-4 text-cyan-400" />
-                </motion.div>
-                Welcome to Sangyan Community
-              </motion.div>
-            </motion.div>
-
-            {/* Main Heading with Gradient Animation */}
-            <motion.h1 
-              className="text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-tight tracking-tight"
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
-            >
-              Welcome to{' '}
-              <motion.span 
-                className="inline-block bg-gradient-to-r from-cyan-400 via-blue-700 to-teal-400 bg-clip-text text-transparent pb-8"
-                animate={{
-                  backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'],
-                }}
-                transition={{
-                  duration: 5,
-                  repeat: Infinity,
-                  ease: 'linear'
-                }}
-                style={{ backgroundSize: '200% 200%' }}
-              >
-                Sangyan
-              </motion.span>
-            </motion.h1>
-
-            {/* Subheading with Stagger */}
-            <motion.p 
-              className="text-xl md:text-2xl text-slate-300 font-light max-w-3xl mx-auto leading-relaxed"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.6 }}
-            >
-              A comprehensive platform for learning, sharing, and growing together
-            </motion.p>
-
-            <motion.p 
-              className="text-lg text-slate-400 max-w-3xl mx-auto"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.8 }}
-            >
-              Discover a world of knowledge, connection, and growth
-            </motion.p>
-
-            {/* CTA Buttons with Magnetic Effect */}
-            <motion.div 
-              className="flex flex-col sm:flex-row gap-12 justify-center items-center pt-8"
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 1 }}
-            >
-              <motion.div
-                whileHover={{ scale: 1.05, y: -5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link
-                  to={`${SANGYAN_CONFIG.basePath}/blogs`}
-                  className="group px-8 py-4 bg-gradient-to-r from-cyan-600 to-blue-600 text-white rounded-xl font-semibold transition-all duration-300 flex items-center gap-2 shadow-2xl shadow-cyan-500/30 hover:shadow-cyan-400/50 relative overflow-hidden"
-                >
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-500"
-                    initial={{ x: '-100%' }}
-                    whileHover={{ x: 0 }}
-                    transition={{ duration: 0.3 }}
-                  />
-                  <span className="relative z-10">Explore Blogs</span>
-                  <motion.div
-                    className="relative z-10"
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  >
-                    <ArrowRight className="w-5 h-5" />
-                  </motion.div>
-                </Link>
-              </motion.div>
-
-              <motion.div
-                whileHover={{ scale: 1.05, y: -5 }}
-                whileTap={{ scale: 0.95 }}
-              >
-                <Link
-                  to={`${SANGYAN_CONFIG.basePath}/events`}
-                  className="group px-8 py-4 bg-slate-800/50 backdrop-blur-md border-2 border-slate-700 text-white rounded-xl font-semibold hover:bg-slate-800 hover:border-cyan-500/50 transition-all duration-300 flex items-center gap-2"
-                >
-                  Join Events
-                  <Calendar className="w-5 h-5" />
-                </Link>
-              </motion.div>
-            </motion.div>
-
-            {/* Scroll Indicator with Animation */}
-            <motion.div 
-              className="absolute bottom-8 left-1/2 transform -translate-x-1/2"
-              animate={{ y: [0, 10, 0] }}
-              transition={{ duration: 1.5, repeat: Infinity }}
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-            >
-              <div className="w-6 h-10 border-2 border-cyan-400/60 rounded-full flex justify-center pt-2">
-                <motion.div 
-                  className="w-1 h-3 bg-cyan-400 rounded-full"
-                  animate={{ y: [0, 12, 0], opacity: [1, 0, 1] }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+                  key={i}
+                  className="absolute rounded-full"
+                  style={{
+                    width: Math.random() * 4 + 2,
+                    height: Math.random() * 4 + 2,
+                    background: i % 3 === 0 ? '#60A5FA' : i % 3 === 1 ? '#22D3EE' : '#A78BFA',
+                    boxShadow: '0 0 20px currentColor'
+                  }}
+                  initial={{
+                    x: Math.random() * (typeof window !== 'undefined' ? window.innerWidth : 1920),
+                    y: Math.random() * (typeof window !== 'undefined' ? window.innerHeight : 1080),
+                    opacity: 0,
+                    scale: 0
+                  }}
+                  animate={{
+                    y: [null, Math.random() * -200 - 100],
+                    x: [null, Math.random() * 100 - 50],
+                    opacity: [0, 0.8, 0],
+                    scale: [0, 1, 0.5]
+                  }}
+                  transition={{
+                    duration: Math.random() * 4 + 4,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: Math.random() * 3
+                  }}
                 />
-              </div>
-            </motion.div>
-          </div>
-        </motion.section>
-
-        {/* Content with Solid Backgrounds */}
-        <div className="relative bg-transparent">
-          {/* Stats Section with Advanced Glassmorphism */}
-          <motion.section 
-            className="relative -mt-16 z-20 px-4 sm:px-6 lg:px-8 pt-16"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: '-100px' }}
-            variants={staggerContainer}
-          >
-            <div className="max-w-7xl mx-auto">
-              <motion.div 
-                className="grid grid-cols-2 md:grid-cols-4 gap-4"
-                variants={staggerContainer}
-              >
-                {stats.map((stat, index) => {
-                  const Icon = stat.icon;
-                  return (
-                    <motion.div
-                      key={index}
-                      variants={scaleIn}
-                      whileHover={{ 
-                        y: -10, 
-                        scale: 1.05,
-                        transition: { duration: 0.3 }
-                      }}
-                      className="group relative bg-slate-900/80 backdrop-blur-xl rounded-xl p-6 shadow-2xl transition-all duration-500 border border-slate-800 hover:border-cyan-500/30 overflow-hidden cursor-pointer"
-                    >
-                      {/* Animated Glow Effect */}
-                      <motion.div 
-                        className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                        initial={{ scale: 0 }}
-                        whileHover={{ scale: 1 }}
-                      >
-                        <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-10 blur-xl`} />
-                      </motion.div>
-
-                      <div className="relative z-10">
-                        <motion.div 
-                          className={`inline-flex p-3 rounded-xl bg-gradient-to-br ${stat.color} mb-4 shadow-lg`}
-                          whileHover={{ rotate: [0, -10, 10, -10, 0], scale: 1.1 }}
-                          transition={{ duration: 0.5 }}
-                        >
-                          <Icon className="w-6 h-6 text-white" />
-                        </motion.div>
-                        <motion.div 
-                          className="text-3xl font-bold text-white mb-2"
-                          initial={{ opacity: 0, scale: 0 }}
-                          whileInView={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: index * 0.1 + 0.3 }}
-                        >
-                          {stat.value}
-                        </motion.div>
-                        <div className="text-sm text-slate-400 font-medium">
-                          {stat.label}
-                        </div>
-                      </div>
-                    </motion.div>
-                  );
-                })}
-              </motion.div>
+              ))}
             </div>
-          </motion.section>
+          </div>
 
-          {/* Features Section with Hover Effects */}
-          <AnimatedSection className="py-20 px-4 sm:px-6 lg:px-8 bg-transparent">
-            <div className="max-w-7xl mx-auto">
-              <motion.div 
-                className="text-center mb-16"
-                initial={{ opacity: 0, y: 50 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6 }}
-              >
-                <h2 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                  What We <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">Offer</span>
-                </h2>
-                <p className="text-lg text-slate-400 max-w-2xl mx-auto">
-                  Discover a world of knowledge, connection, and growth
-                </p>
-              </motion.div>
+          {/* Hero Content - Split Layout */}
+          <motion.div
+            ref={heroRef}
+            style={{ y: yHero, opacity: opacityHero }}
+            className="relative z-10 min-h-screen flex items-center px-4 sm:px-6 lg:px-8 pt-20"
+          >
+            <div className="max-w-7xl mx-auto w-full grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+              {/* Left Side - Empty for Video Visibility */}
+              <div className="hidden lg:block" />
 
-              <motion.div 
-                className="grid md:grid-cols-2 lg:grid-cols-4 gap-6"
+              {/* Right Side - Text Content with Magical Effects */}
+              <motion.div
                 variants={staggerContainer}
                 initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: '-100px' }}
+                animate="visible"
+                className="relative"
               >
-                {features.map((feature, index) => {
-                  const Icon = feature.icon;
-                  return (
-                    <motion.div
-                      key={index}
-                      variants={fadeInUp}
+                {/* Magical Glow Background */}
+                <div className="absolute -inset-4 bg-gradient-to-br from-blue-500/20 via-cyan-500/20 to-purple-500/20 rounded-3xl blur-3xl animate-pulse" />
+                
+                <div className="relative bg-slate-950/40 backdrop-blur-xl rounded-3xl p-8 md:p-10 border border-white/10 shadow-2xl">
+                  {/* Welcome Badge with Shimmer */}
+                  <motion.div 
+                    variants={fadeInDown}
+                    className="inline-flex items-center gap-2 px-4 py-2 mb-6 bg-gradient-to-r from-blue-500/30 to-cyan-500/30 border border-blue-400/40 rounded-full backdrop-blur-md relative overflow-hidden"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+                    <Sparkles className="w-4 h-4 text-cyan-300 animate-pulse relative z-10" />
+                    <span className="text-xs font-semibold text-cyan-100 tracking-wide relative z-10">Welcome to Sangyan Community</span>
+                  </motion.div>
+
+                  {/* Main Heading with Glow */}
+                  <motion.h1 
+                    variants={fadeInRight}
+                    className="text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-6"
+                  >
+                    <span className="text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]">
+                      Welcome to{' '}
+                    </span>
+                    <span className="relative inline-block">
+                      <span className="bg-gradient-to-r from-cyan-300 via-blue-300 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_40px_rgba(34,211,238,0.8)] animate-gradient">
+                        Sangyan
+                      </span>
+                      <motion.div
+                        className="absolute -inset-2 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-lg blur-2xl opacity-30"
+                        animate={{
+                          opacity: [0.3, 0.5, 0.3],
+                          scale: [1, 1.1, 1]
+                        }}
+                        transition={{
+                          duration: 3,
+                          repeat: Infinity,
+                          ease: "easeInOut"
+                        }}
+                      />
+                    </span>
+                  </motion.h1>
+
+                  {/* Subheadings with Elegant Spacing */}
+                  <motion.div variants={fadeInRight} className="space-y-3 mb-8">
+                    <p className="text-base sm:text-lg text-white font-medium drop-shadow-[0_2px_10px_rgba(0,0,0,0.5)]">
+                      A comprehensive platform for learning, sharing, and growing together
+                    </p>
+                    <p className="text-sm text-cyan-100/90 drop-shadow-[0_2px_8px_rgba(0,0,0,0.5)]">
+                      Discover a world of knowledge, connection, and growth
+                    </p>
+                  </motion.div>
+
+                  {/* CTA Buttons with Magical Hover */}
+                  <motion.div 
+                    variants={fadeInRight}
+                    className="flex flex-col sm:flex-row gap-4"
+                  >
+                    <Link
+                      to="/blog"
+                      className="group relative px-7 py-3.5 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-bold rounded-xl overflow-hidden transition-all duration-300"
                     >
-                      <Link
-                        to={feature.link}
-                        className="block"
-                      >
-                        <motion.div
-                          className="group relative bg-slate-900/60 backdrop-blur-sm rounded-xl p-8 shadow-lg transition-all duration-500 border border-slate-800 hover:border-cyan-500/30 overflow-hidden cursor-pointer h-full"
-                          whileHover={{ 
-                            y: -10,
-                            boxShadow: '0 20px 40px rgba(6, 182, 212, 0.2)'
-                          }}
-                        >
-                          {/* Animated Background Gradient */}
-                          <motion.div 
-                            className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-blue-500/5 opacity-0 group-hover:opacity-100"
-                            initial={{ scale: 0, rotate: 0 }}
-                            whileHover={{ scale: 1, rotate: 5 }}
-                            transition={{ duration: 0.5 }}
-                          />
+                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-400 to-blue-400 opacity-0 group-hover:opacity-100 transition-opacity" />
+                      <span className="relative z-10 flex items-center justify-center gap-2">
+                        <BookOpen className="w-4 h-4" />
+                        Explore Blogs
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </span>
+                      <div className="absolute inset-0 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-400 blur-lg opacity-0 group-hover:opacity-60 transition-opacity" />
+                    </Link>
+                    
+                    <Link
+                      to="/events"
+                      className="group px-7 py-3.5 bg-white/10 backdrop-blur-md border-2 border-cyan-400/50 text-white text-sm font-bold rounded-xl hover:bg-white/20 hover:border-cyan-300 transition-all duration-300 flex items-center justify-center gap-2 relative overflow-hidden"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/0 via-cyan-500/20 to-cyan-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                      <Calendar className="w-4 h-4 relative z-10" />
+                      <span className="relative z-10">Join Events</span>
+                    </Link>
+                  </motion.div>
 
-                          <div className="relative z-10">
-                            <motion.div 
-                              className="inline-flex p-3 rounded-xl bg-gradient-to-br from-cyan-600/20 to-blue-600/20 border border-cyan-500/30 mb-5 shadow-lg"
-                              whileHover={{ 
-                                rotate: [0, -15, 15, -15, 0],
-                                scale: 1.1 
-                              }}
-                              transition={{ duration: 0.6 }}
-                            >
-                              <Icon className="w-7 h-7 text-cyan-400" />
-                            </motion.div>
-                            <h3 className="text-xl font-bold text-white mb-3 group-hover:text-transparent group-hover:bg-clip-text group-hover:bg-gradient-to-r group-hover:from-cyan-400 group-hover:to-blue-400 transition-all duration-500">
-                              {feature.title}
-                            </h3>
-                            <p className="text-sm text-slate-400 leading-relaxed mb-4 group-hover:text-slate-300 transition-colors duration-300">
-                              {feature.description}
-                            </p>
-                            <motion.div 
-                              className="flex items-center text-cyan-400 font-semibold text-sm"
-                              initial={{ x: 0 }}
-                              whileHover={{ x: 5 }}
-                            >
-                              Learn more
-                              <ArrowRight className="w-4 h-4 ml-1" />
-                            </motion.div>
-                          </div>
+                  {/* Decorative Elements */}
+                  <div className="absolute -top-6 -right-6 w-24 h-24 bg-cyan-500/20 rounded-full blur-2xl animate-pulse" />
+                  <div className="absolute -bottom-6 -left-6 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl animate-pulse" style={{ animationDelay: '1s' }} />
+                </div>
 
-                          {/* Hover border effect */}
-                          <motion.div 
-                            className="absolute inset-0 border-2 border-cyan-500/0 group-hover:border-cyan-500/30 rounded-xl pointer-events-none"
-                            initial={{ opacity: 0 }}
-                            whileHover={{ opacity: 1 }}
-                          />
-                        </motion.div>
-                      </Link>
-                    </motion.div>
-                  );
-                })}
+                {/* Scroll Indicator */}
+                <motion.div
+                  variants={fadeInUp}
+                  className="mt-12 flex flex-col items-center gap-2"
+                >
+                  <span className="text-xs text-cyan-200 font-medium drop-shadow-[0_2px_8px_rgba(0,0,0,0.8)]">
+                    Scroll to explore more
+                  </span>
+                  <TrendingUp className="w-5 h-5 text-cyan-300 animate-bounce drop-shadow-[0_2px_12px_rgba(34,211,238,0.8)]" />
+                </motion.div>
               </motion.div>
             </div>
-          </AnimatedSection>
+          </motion.div>
+        </section>
 
-          {/* Featured Blogs Section */}
-          <AnimatedSection className="py-20 px-4 sm:px-6 lg:px-8 bg-black">
-            <div className="max-w-7xl mx-auto">
-              <motion.div 
-                className="flex justify-between items-center mb-12"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-              >
-                <div>
-                  <h2 className="text-4xl font-bold text-white mb-2">
-                    Latest <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">Insights</span>
+        {/* Content Sections with Solid Backgrounds */}
+        <div className="relative bg-gradient-to-b from-slate-900 via-slate-900 to-slate-950">
+          {/* Stats Section */}
+          <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-900/80 backdrop-blur-sm">
+            <AnimatedSection>
+              <div className="max-w-7xl mx-auto">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
+                  {stats.map((stat, index) => {
+                    const Icon = stat.icon;
+                    return (
+                      <motion.div
+                        key={index}
+                        variants={scaleIn}
+                        whileHover={{ scale: 1.05, y: -5 }}
+                        className="relative group bg-slate-900/50 backdrop-blur-xl border border-blue-500/20 rounded-2xl p-5 hover:border-blue-500/40 transition-all duration-300"
+                      >
+                        <div className={`absolute inset-0 bg-gradient-to-br ${stat.color} opacity-0 group-hover:opacity-10 rounded-2xl blur-xl transition-opacity`} />
+                        
+                        <div className="relative z-10">
+                          <div className={`w-11 h-11 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                            <Icon className="w-5 h-5 text-white" />
+                          </div>
+                          <div className="text-2xl md:text-3xl font-bold text-white mb-1">{stat.value}</div>
+                          <div className="text-xs text-slate-400">{stat.label}</div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            </AnimatedSection>
+          </section>
+
+          {/* Features Section */}
+          <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-900">
+            <AnimatedSection>
+              <div className="max-w-7xl mx-auto">
+                <div className="text-center mb-10">
+                  <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+                    What We Offer
                   </h2>
-                  <p className="text-slate-400">
-                    From our community of researchers
+                  <p className="text-sm text-slate-400 max-w-2xl mx-auto">
+                    Discover a world of knowledge, connection, and growth
                   </p>
                 </div>
-                <motion.div
-                  whileHover={{ x: 5 }}
-                >
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                  {features.map((feature, index) => {
+                    const Icon = feature.icon;
+                    return (
+                      <motion.div
+                        key={index}
+                        variants={scaleIn}
+                        whileHover={{ y: -8 }}
+                        className="relative group bg-slate-800/40 backdrop-blur-sm border border-blue-500/20 rounded-2xl p-5 hover:border-blue-500/50 transition-all duration-300 overflow-hidden"
+                      >
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/0 via-cyan-500/0 to-blue-500/0 group-hover:from-blue-500/5 group-hover:via-cyan-500/5 group-hover:to-blue-500/5 transition-all duration-500" />
+                        
+                        <div className="relative z-10">
+                          <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 flex items-center justify-center mb-4 group-hover:scale-110 group-hover:rotate-3 transition-all">
+                            <Icon className="w-5 h-5 text-blue-400" />
+                          </div>
+                          <h3 className="text-base font-bold text-white mb-2 group-hover:text-blue-400 transition-colors">
+                            {feature.title}
+                          </h3>
+                          <p className="text-xs text-slate-400 leading-relaxed mb-4">
+                            {feature.description}
+                          </p>
+                          <Link
+                            to={feature.link}
+                            className="inline-flex items-center gap-1 text-xs font-medium text-blue-400 group-hover:text-cyan-400 transition-colors"
+                          >
+                            Learn more
+                            <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
+                          </Link>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+            </AnimatedSection>
+          </section>
+
+          {/* Featured Blogs Section */}
+          <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-900 to-slate-950">
+            <AnimatedSection>
+              <div className="max-w-7xl mx-auto">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+                  <div>
+                    <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+                      Latest Insights
+                    </h2>
+                    <p className="text-sm text-slate-400">
+                      From our community of researchers
+                    </p>
+                  </div>
                   <Link
-                    to={`${SANGYAN_CONFIG.basePath}/blogs`}
-                    className="hidden md:flex items-center gap-2 text-cyan-400 font-semibold group"
+                    to="/blog"
+                    className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 border border-blue-500/20 text-blue-400 text-sm font-medium rounded-xl hover:bg-slate-800 hover:border-blue-500/40 transition-all"
                   >
                     View all blogs
                     <ArrowRight className="w-4 h-4" />
                   </Link>
-                </motion.div>
-              </motion.div>
+                </div>
 
-              <motion.div 
-                className="grid md:grid-cols-2 lg:grid-cols-3 gap-6"
-                variants={staggerContainer}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: '-100px' }}
-              >
-                {featuredBlogs.map((blog) => (
-                  <motion.div 
-                    key={blog.id}
-                    variants={fadeInUp}
-                    whileHover={{ y: -10 }}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {featuredBlogs.map((blog) => (
+                    <BlogCard key={blog.id} blog={blog} />
+                  ))}
+                </div>
+
+                <div className="mt-8 text-center md:hidden">
+                  <Link
+                    to="/blog"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm font-medium rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all shadow-lg shadow-blue-500/25"
                   >
-                    <BlogCard blog={blog} />
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              <div className="mt-8 md:hidden text-center">
-                <Link
-                  to={`${SANGYAN_CONFIG.basePath}/blogs`}
-                  className="inline-flex items-center gap-2 text-cyan-400 font-semibold"
-                >
-                  View all blogs
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                    View all blogs
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
               </div>
-            </div>
-          </AnimatedSection>
+            </AnimatedSection>
+          </section>
 
           {/* Upcoming Events Section */}
-          <AnimatedSection className="py-20 px-4 sm:px-6 lg:px-8 bg-[#0a0a0a]">
-            <div className="max-w-7xl mx-auto">
-              <motion.div 
-                className="flex justify-between items-center mb-12"
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-              >
-                <div>
-                  <h2 className="text-4xl font-bold text-white mb-2">
-                    Upcoming <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400">Events</span>
-                  </h2>
-                  <p className="text-slate-400">
-                    Join our talks, workshops, and community sessions
-                  </p>
-                </div>
-                <motion.div
-                  whileHover={{ x: 5 }}
-                >
+          <section className="py-16 px-4 sm:px-6 lg:px-8 bg-slate-950">
+            <AnimatedSection>
+              <div className="max-w-7xl mx-auto">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+                  <div>
+                    <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2">
+                      Upcoming Events
+                    </h2>
+                    <p className="text-sm text-slate-400">
+                      Join our talks, workshops, and community sessions
+                    </p>
+                  </div>
                   <Link
-                    to={`${SANGYAN_CONFIG.basePath}/events`}
-                    className="hidden md:flex items-center gap-2 text-cyan-400 font-semibold group"
+                    to="/events"
+                    className="hidden md:inline-flex items-center gap-2 px-4 py-2 bg-slate-800/50 border border-blue-500/20 text-blue-400 text-sm font-medium rounded-xl hover:bg-slate-800 hover:border-blue-500/40 transition-all"
                   >
                     View all events
                     <ArrowRight className="w-4 h-4" />
                   </Link>
-                </motion.div>
-              </motion.div>
+                </div>
 
-              <motion.div 
-                className="grid md:grid-cols-2 gap-6"
-                variants={staggerContainer}
-                initial="hidden"
-                whileInView="visible"
-                viewport={{ once: true, margin: '-100px' }}
-              >
-                {upcomingEvents.map((event, index) => (
-                  <motion.div 
-                    key={event.id}
-                    variants={index === 0 ? fadeInLeft : fadeInRight}
-                    whileHover={{ y: -10 }}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {upcomingEvents.map((event) => (
+                    <EventCard key={event.id} event={event} />
+                  ))}
+                </div>
+
+                <div className="mt-8 text-center md:hidden">
+                  <Link
+                    to="/events"
+                    className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm font-medium rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all shadow-lg shadow-blue-500/25"
                   >
-                    <EventCard event={event} />
-                  </motion.div>
-                ))}
-              </motion.div>
-
-              <div className="mt-8 md:hidden text-center">
-                <Link
-                  to={`${SANGYAN_CONFIG.basePath}/events`}
-                  className="inline-flex items-center gap-2 text-cyan-400 font-semibold"
-                >
-                  View all events
-                  <ArrowRight className="w-4 h-4" />
-                </Link>
+                    View all events
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
               </div>
-            </div>
-          </AnimatedSection>
+            </AnimatedSection>
+          </section>
 
           {/* Newsletter Section */}
-          <AnimatedSection>
-            <Newsletter />
-          </AnimatedSection>
+          <Newsletter />
         </div>
       </div>
 
       <Footer />
-    </div>
+    </>
   );
 };
 

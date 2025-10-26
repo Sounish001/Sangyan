@@ -8,20 +8,20 @@ const Footer: React.FC = () => {
 
   const footerLinks = {
     explore: [
-      { name: 'Research Blogs', path: `${SANGYAN_CONFIG.basePath}/blogs` },
-      { name: 'Events & Workshops', path: `${SANGYAN_CONFIG.basePath}/events` },
-      { name: 'Learning Resources', path: `${SANGYAN_CONFIG.basePath}/resources` },
-      { name: 'Our Team', path: `${SANGYAN_CONFIG.basePath}/team` }
+      { name: 'Research Blogs', path: `/blogs` },
+      { name: 'Events & Workshops', path: `/events` },
+      { name: 'Learning Resources', path: `/resources` },
+      { name: 'Our Team', path: `/team` }
     ],
     community: [
-      { name: 'About Us', path: `${SANGYAN_CONFIG.basePath}/about` },
-      { name: 'Join the Community', path: `${SANGYAN_CONFIG.basePath}/about#join` },
-      { name: 'Contribute Content', path: `${SANGYAN_CONFIG.basePath}/about#contribute` },
-      { name: 'Partner Institutes', path: `${SANGYAN_CONFIG.basePath}/about#partners` }
+      { name: 'About Us', path: `/about` },
+      { name: 'Join the Community', path: `/membership` },
+      { name: 'Contribute Content', path: `/about#contribute` },
+      { name: 'Partner Institutes', path: `/about#partners` }
     ],
     categories: SANGYAN_CONFIG.categories.slice(0, 5).map(cat => ({
       name: cat,
-      path: `${SANGYAN_CONFIG.basePath}/blogs?category=${cat}`
+      path: `/blogs?category=${cat}`
     }))
   };
 
@@ -46,7 +46,7 @@ const Footer: React.FC = () => {
         <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
           {/* Brand Section */}
           <div className="lg:col-span-2">
-            <Link to={`${SANGYAN_CONFIG.basePath}/`} className="inline-flex items-center gap-2 mb-4 group">
+            <Link to={`/`} className="inline-flex items-center gap-2 mb-4 group">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg blur-lg opacity-50 group-hover:opacity-75 transition-opacity" />
                 <div className="relative p-2 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-lg">

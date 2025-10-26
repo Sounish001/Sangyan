@@ -5,42 +5,23 @@ import LoadingSpinner from './LoadingSpinner';
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  requireAuth?: boolean;
-  redirectTo?: string;
 }
 
-/**
- * ProtectedRoute component for handling authentication-based routing
- * - requireAuth=true: Only authenticated users can access (default)
- * - requireAuth=false: Only non-authenticated users can access (for login/signup pages)
- */
-const ProtectedRoute = ({ 
-  children, 
-  requireAuth = true, 
-  redirectTo = '/login' 
-}: ProtectedRouteProps) => {
+const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
 
-  // Show loading spinner while checking authentication
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-50">
-        <LoadingSpinner size="large" text="Loading..." />
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-cyan-900">
+        <LoadingSpinner />
       </div>
     );
   }
 
-  // If authentication is required but user is not logged in
-  if (requireAuth && !user) {
-    return <Navigate to={redirectTo} replace />;
+  if (!user) {
+    return <Navigate to="/login" replace />;
   }
 
-  // If authentication is NOT required but user IS logged in (e.g., login/signup pages)
-  if (!requireAuth && user) {
-    return <Navigate to="/" replace />;
-  }
-
-  // User has proper access, render children
   return <>{children}</>;
 };
 

@@ -1,37 +1,28 @@
 // src/components/Layout.tsx
 import { ReactNode } from 'react';
 import Navbar from './Navbar';
-import Footer from './Footer';
 
 interface LayoutProps {
   children: ReactNode;
   hideNavbar?: boolean;
-  hideFooter?: boolean;
   className?: string;
 }
 
 /**
- * Layout component that wraps pages with Navbar and Footer
- * Provides consistent structure across all Sangyan pages
+ * Layout component that wraps pages with Navbar
+ * Note: Footer is removed to prevent duplication since pages handle their own footers
  */
 const Layout = ({ 
   children, 
-  hideNavbar = false, 
-  hideFooter = false,
+  hideNavbar = false,
   className = '' 
 }: LayoutProps) => {
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-gray-50 to-white">
-      {/* Navbar - Fixed at top */}
+    <div className={`min-h-screen flex flex-col ${className}`}>
       {!hideNavbar && <Navbar />}
-
-      {/* Main Content Area */}
-      <main className={`flex-grow ${className}`}>
+      <main className="flex-grow">
         {children}
       </main>
-
-      {/* Footer - Stays at bottom */}
-      {!hideFooter && <Footer />}
     </div>
   );
 };

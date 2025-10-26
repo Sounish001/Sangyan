@@ -6,14 +6,14 @@ import {
   signOut as firebaseSignOut,
   updateProfile as firebaseUpdateProfile,
 } from 'firebase/auth';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { doc, getDoc, setDoc, updateDoc, increment } from 'firebase/firestore';
 import { auth, db } from '../services/firebase';
 import toast from 'react-hot-toast';
 
-// User role types based on your existing structure
+// User role types
 export type UserRole = 'admin' | 'member' | 'guest';
 
-// Extended user data interface
+// Extended user data interface with Paras Stones
 export interface UserData {
   uid: string;
   email: string | null;
@@ -25,6 +25,17 @@ export interface UserData {
   institute?: string;
   course?: string;
   bio?: string;
+  parasStones: number; // New field for Paras Stones
+  parasHistory?: ParasTransaction[]; // Transaction history
+}
+
+// Paras transaction interface
+export interface ParasTransaction {
+  id: string;
+  amount: number;
+  type: 'earned' | 'spent';
+  reason: string;
+  timestamp: string;
 }
 
 interface AuthContextType {
@@ -34,11 +45,12 @@ interface AuthContextType {
   signOut: () => Promise<void>;
   updateProfile: (displayName: string, photoURL?: string) => Promise<void>;
   refreshUserData: () => Promise<void>;
+  addParasStones: (amount: number, reason: string) => Promise<void>;
+  spendParasStones: (amount: number, reason: string) => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Custom hook to use auth context
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
@@ -61,11 +73,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     try {
       const userDocRef = doc(db, 'users', uid);
       const userDoc = await getDoc(userDocRef);
-
+      
       if (userDoc.exists()) {
         return userDoc.data() as UserData;
       } else {
-        // Create a default user document if it doesn't exist
+        // Create default user document with 100 welcome Paras Stones
         const defaultUserData: UserData = {
           uid,
           email: user?.email || null,
@@ -74,9 +86,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           role: 'guest',
           membershipStatus: 'pending',
           createdAt: new Date().toISOString(),
+          parasStones: 100, // Welcome bonus
+          parasHistory: [{
+            id: Date.now().toString(),
+            amount: 100,
+            type: 'earned',
+            reason: 'Welcome bonus for signing up!',
+            timestamp: new Date().toISOString()
+          }]
         };
-
+        
         await setDoc(userDocRef, defaultUserData);
+        toast.success('🎉 Welcome! You received 100 Paras Stones!', { duration: 4000 });
         return defaultUserData;
       }
     } catch (error) {
@@ -86,7 +107,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  // Refresh user data manually
+  // Refresh user data
   const refreshUserData = async () => {
     if (user) {
       const data = await fetchUserData(user.uid);
@@ -94,17 +115,77 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
+  // Add Paras Stones
+  const addParasStones = async (amount: number, reason: string) => {
+    if (!user) throw new Error('No user logged in');
+    
+    try {
+      const userDocRef = doc(db, 'users', user.uid);
+      const transaction: ParasTransaction = {
+        id: Date.now().toString(),
+        amount,
+        type: 'earned',
+        reason,
+        timestamp: new Date().toISOString()
+      };
+
+      await updateDoc(userDocRef, {
+        parasStones: increment(amount),
+        parasHistory: [...(userData?.parasHistory || []), transaction]
+      });
+
+      await refreshUserData();
+      toast.success(`🎉 You earned ${amount} Paras Stones! ${reason}`, { duration: 3000 });
+    } catch (error) {
+      console.error('Error adding Paras Stones:', error);
+      toast.error('Failed to add Paras Stones');
+    }
+  };
+
+  // Spend Paras Stones
+  const spendParasStones = async (amount: number, reason: string): Promise<boolean> => {
+    if (!user || !userData) throw new Error('No user logged in');
+    
+    if (userData.parasStones < amount) {
+      toast.error('Insufficient Paras Stones!');
+      return false;
+    }
+
+    try {
+      const userDocRef = doc(db, 'users', user.uid);
+      const transaction: ParasTransaction = {
+        id: Date.now().toString(),
+        amount,
+        type: 'spent',
+        reason,
+        timestamp: new Date().toISOString()
+      };
+
+      await updateDoc(userDocRef, {
+        parasStones: increment(-amount),
+        parasHistory: [...(userData?.parasHistory || []), transaction]
+      });
+
+      await refreshUserData();
+      toast.success(`✨ You spent ${amount} Paras Stones on ${reason}`);
+      return true;
+    } catch (error) {
+      console.error('Error spending Paras Stones:', error);
+      toast.error('Failed to spend Paras Stones');
+      return false;
+    }
+  };
+
   // Update user profile
   const updateProfile = async (displayName: string, photoURL?: string) => {
     if (!user) throw new Error('No user logged in');
-
+    
     try {
       await firebaseUpdateProfile(user, {
         displayName,
         ...(photoURL && { photoURL }),
       });
 
-      // Update Firestore
       const userDocRef = doc(db, 'users', user.uid);
       await setDoc(
         userDocRef,
@@ -124,7 +205,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  // Sign out function
+  // Sign out
   const signOut = async () => {
     try {
       await firebaseSignOut(auth);
@@ -138,19 +219,16 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  // Listen to auth state changes
+  // Auth state listener
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       setUser(firebaseUser);
-
       if (firebaseUser) {
-        // Fetch additional user data from Firestore
         const data = await fetchUserData(firebaseUser.uid);
         setUserData(data);
       } else {
         setUserData(null);
       }
-
       setLoading(false);
     });
 
@@ -164,6 +242,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     signOut,
     updateProfile,
     refreshUserData,
+    addParasStones,
+    spendParasStones,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Mail, Linkedin, Github, Instagram, Search, UserPlus, Users as UsersIcon, Sparkles } from 'lucide-react';
+import { Mail, Linkedin, Github, Instagram, Search, UserPlus, Users as UsersIcon, Sparkles, Crown, Star } from 'lucide-react';
+import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Newsletter from '../components/Newsletter';
@@ -18,81 +19,96 @@ interface TeamMember {
     linkedin?: string;
     github?: string;
   };
+  featured?: boolean;
 }
 
 const teamMembers: TeamMember[] = [
+  // Featured Developer - Sounish S.
   {
     id: '1',
-    name: 'Aditya Sharma',
-    role: 'Founder & Lead',
-    institute: 'IISER Pune',
-    bio: 'Passionate about making science accessible and fostering collaborative learning across institutes.',
-    expertise: ['Physics', 'Community Building', 'Content Strategy'],
+    name: 'Sounish S.',
+    role: 'Lead Developer & Visionary',
+    institute: 'IISER Berhampur',
+    bio: 'Founded the revolutionary idea of "Shodh" - transforming scientific research accessibility. Full-stack developer passionate about building platforms that empower student communities.',
+    expertise: ['Web Development', 'React/TypeScript', 'Firebase', 'UI/UX Design', 'Innovation'],
     social: {
-      email: 'aditya@sangyan.org',
-      linkedin: '#',
-      github: '#'
-    }
+      email: 'sounish@sangyan.org',
+      github: '#',
+      linkedin: 'https://www.linkedin.com/in/sounish-singha-869544258/'
+    },
+    featured: true
   },
+  // Founder and Executive Head
   {
     id: '2',
-    name: 'Priya Menon',
-    role: 'Content Head',
-    institute: 'IISc Bangalore',
-    bio: 'Loves curating quality research content and mentoring students in scientific writing.',
-    expertise: ['Biology', 'Scientific Writing', 'Education'],
+    name: 'Shrirang K.',
+    role: 'Founder & Executive Head',
+    institute: 'IISER Berhampur',
+    bio: 'Visionary founder leading Sangyan\'s mission to create a collaborative scientific community. Passionate about fostering innovation and knowledge sharing.',
+    expertise: ['Leadership', 'Strategic Planning', 'Community Building', 'Science Communication'],
     social: {
-      email: 'priya@sangyan.org',
+      email: 'shrirang@sangyan.org',
       linkedin: '#'
     }
   },
+  // Founding Members and Coordinators
   {
     id: '3',
-    name: 'Rajesh Kumar',
-    role: 'Events Coordinator',
-    institute: 'IIT Delhi',
-    bio: 'Organizing impactful events and bringing together experts from diverse scientific fields.',
-    expertise: ['Event Management', 'Chemistry', 'Networking'],
+    name: 'Om',
+    role: 'Founding Member & Coordinator',
+    institute: 'IISER Berhampur',
+    bio: 'Core founding member dedicated to organizing events and coordinating activities that bring together scientific minds.',
+    expertise: ['Event Coordination', 'Team Management', 'Research'],
     social: {
-      email: 'rajesh@sangyan.org',
+      email: 'om@sangyan.org',
       linkedin: '#'
     }
   },
   {
     id: '4',
-    name: 'Ananya Desai',
-    role: 'Tech Lead',
-    institute: 'IISER Kolkata',
-    bio: 'Building digital platforms to connect learners and researchers across the country.',
-    expertise: ['Web Development', 'Data Science', 'UX Design'],
+    name: 'Shreekant',
+    role: 'Founding Member & Coordinator',
+    institute: 'IISER Berhampur',
+    bio: 'Passionate coordinator working to expand Sangyan\'s reach and impact across the student community.',
+    expertise: ['Community Outreach', 'Content Creation', 'Collaboration'],
     social: {
-      email: 'ananya@sangyan.org',
-      linkedin: '#',
-      github: '#'
+      email: 'shreekant@sangyan.org',
+      linkedin: '#'
     }
   },
   {
     id: '5',
-    name: 'Vikram Singh',
-    role: 'Community Manager',
-    institute: 'NISER Bhubaneswar',
-    bio: 'Fostering inclusive spaces for scientific discussions and peer learning.',
-    expertise: ['Community Management', 'Mathematics', 'Social Media'],
+    name: 'Saurabh',
+    role: 'Founding Member & Coordinator',
+    institute: 'IISER Berhampur',
+    bio: 'Committed to building strong connections between students and fostering a culture of scientific curiosity.',
+    expertise: ['Networking', 'Event Planning', 'Student Engagement'],
     social: {
-      email: 'vikram@sangyan.org',
-      linkedin: '#',
-      instagram: '#'
+      email: 'saurabh@sangyan.org',
+      linkedin: '#'
     }
   },
   {
     id: '6',
-    name: 'Meera Patel',
-    role: 'Outreach Coordinator',
+    name: 'Parth',
+    role: 'Founding Member & Coordinator',
     institute: 'IISER Berhampur',
-    bio: 'Connecting Sangyan with students and faculty across institutes.',
-    expertise: ['Outreach', 'Earth Sciences', 'Partnerships'],
+    bio: 'Enthusiastic coordinator focused on creating meaningful learning experiences and collaborative opportunities.',
+    expertise: ['Workshop Organization', 'Mentorship', 'Academic Support'],
     social: {
-      email: 'meera@sangyan.org',
+      email: 'parth@sangyan.org',
+      linkedin: '#'
+    }
+  },
+  {
+    id: '7',
+    name: 'Kartik',
+    role: 'Founding Member & Coordinator',
+    institute: 'IISER Berhampur',
+    bio: 'Dedicated to empowering students through knowledge sharing and organizing impactful scientific initiatives.',
+    expertise: ['Resource Management', 'Team Coordination', 'Innovation'],
+    social: {
+      email: 'kartik@sangyan.org',
       linkedin: '#'
     }
   }
@@ -116,7 +132,7 @@ const Team: React.FC = () => {
       return;
     }
 
-    const filtered = teamMembers.filter(member =>
+    const filtered = teamMembers.filter(member => 
       member.name.toLowerCase().includes(query.toLowerCase()) ||
       member.role.toLowerCase().includes(query.toLowerCase()) ||
       member.institute.toLowerCase().includes(query.toLowerCase()) ||
@@ -125,199 +141,302 @@ const Team: React.FC = () => {
     setFilteredMembers(filtered);
   };
 
+  // Get avatar initials
+  const getInitials = (name: string) => {
+    const parts = name.split(' ');
+    return parts.map(part => part[0]).join('').toUpperCase().slice(0, 2);
+  };
+
+  // Separate featured member from others
+  const featuredMember = filteredMembers.find(m => m.featured);
+  const otherMembers = filteredMembers.filter(m => !m.featured);
+
   return (
-    <div className="min-h-screen bg-[#0a0a0a]">
+    <>
       <Navbar />
-
-      {/* Hero Header */}
-      <section className="relative pt-24 pb-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#0f0f0f] to-[#0a0a0a] overflow-hidden">
-        {/* Animated Background */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-20 left-1/4 w-64 h-64 bg-pink-500/20 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-20 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        </div>
-
-        <div className="relative max-w-4xl mx-auto text-center z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pink-500/10 backdrop-blur-sm border border-pink-500/20 text-pink-400 text-xs font-medium mb-4">
-            <UsersIcon className="w-3 h-3" />
-            Our Team
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+        {/* Hero Section */}
+        <div className="relative py-16 overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-cyan-500/10 to-blue-500/10" />
+          <div className="absolute inset-0">
+            <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/20 rounded-full blur-3xl animate-pulse" />
+            <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500/20 rounded-full blur-3xl animate-pulse delay-1000" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-            Meet the Team
-          </h1>
-          <p className="text-base text-gray-400 max-w-2xl mx-auto leading-relaxed">
-            Meet the passionate volunteers driving Sangyan forward — students and professionals dedicated to making learning accessible, joyful, and collaborative.
-          </p>
-        </div>
-      </section>
 
-      {/* Search Bar */}
-      <section className="px-4 sm:px-6 lg:px-8 -mt-6 relative z-20">
-        <div className="max-w-4xl mx-auto">
-          <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 w-4 h-4" />
-            <input
-              type="text"
-              placeholder="Search team members by name, role, or expertise..."
-              value={searchQuery}
-              onChange={(e) => handleSearch(e.target.value)}
-              className="w-full pl-11 pr-4 py-3 rounded-lg bg-[#1a1a1a] border border-white/10 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-pink-500/50 focus:border-pink-500/50 text-sm transition-all"
-            />
+          <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+            >
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <UsersIcon className="w-6 h-6 text-blue-400" />
+                <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
+              </div>
+              <h1 className="text-4xl md:text-5xl font-bold mb-4">
+                <span className="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                  Meet Our Team
+                </span>
+              </h1>
+              <p className="text-base text-slate-300 max-w-3xl mx-auto leading-relaxed">
+                Meet the passionate innovators driving Sangyan forward — students dedicated to making learning accessible, joyful, and collaborative.
+              </p>
+            </motion.div>
+
+            {/* Search Bar */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="mt-8 max-w-2xl mx-auto"
+            >
+              <div className="relative">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                <input
+                  type="text"
+                  placeholder="Search team members by name, role, or expertise..."
+                  value={searchQuery}
+                  onChange={(e) => handleSearch(e.target.value)}
+                  className="w-full pl-11 pr-4 py-3 bg-slate-900/50 backdrop-blur-sm border border-blue-500/20 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                />
+              </div>
+            </motion.div>
           </div>
         </div>
-      </section>
 
-      {/* Team Grid */}
-      <section className="py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          {filteredMembers.length > 0 ? (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredMembers.map((member, index) => (
-                <div
-                  key={member.id}
-                  className="group relative bg-[#1a1a1a]/60 backdrop-blur-sm rounded-xl p-6 border border-white/10 hover:border-pink-500/30 transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:shadow-pink-500/10"
-                  style={{ animationDelay: `${index * 100}ms` }}
-                >
+        {/* Featured Member - Sounish S. */}
+        {featuredMember && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-10">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="relative"
+            >
+              {/* Spotlight Effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-cyan-500/20 to-blue-500/20 rounded-3xl blur-2xl" />
+              
+              <div className="relative bg-gradient-to-br from-slate-900/90 via-slate-800/90 to-slate-900/90 backdrop-blur-sm border-2 border-blue-500/30 rounded-3xl p-6 md:p-10 shadow-2xl">
+                {/* Featured Badge */}
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <div className="flex items-center gap-2 px-5 py-1.5 bg-gradient-to-r from-yellow-500 to-amber-500 rounded-full shadow-lg">
+                    <Crown className="w-4 h-4 text-white" />
+                    <span className="text-xs font-bold text-white">LEAD DEVELOPER</span>
+                    <Star className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+
+                <div className="flex flex-col md:flex-row items-center gap-6 mt-2">
                   {/* Avatar */}
-                  <div className="flex flex-col items-center mb-4">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-pink-500 to-purple-600 flex items-center justify-center text-white text-2xl font-bold mb-3 group-hover:scale-110 transition-transform duration-300 shadow-lg shadow-pink-500/30">
-                      {member.name.split(' ').map(n => n[0]).join('')}
+                  <div className="relative">
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full blur-xl opacity-50 animate-pulse" />
+                    <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-blue-500 via-cyan-500 to-blue-600 flex items-center justify-center shadow-2xl border-4 border-white/10">
+                      <span className="text-4xl font-bold text-white">{getInitials(featuredMember.name)}</span>
                     </div>
-                    <h3 className="text-lg font-bold text-white text-center group-hover:text-pink-400 transition-colors">
-                      {member.name}
-                    </h3>
-                    <p className="text-sm text-cyan-400 font-medium text-center">
-                      {member.role}
-                    </p>
-                    <p className="text-xs text-gray-500 text-center mt-1">
-                      {member.institute}
-                    </p>
+                    <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-r from-yellow-400 to-amber-400 rounded-full flex items-center justify-center shadow-lg">
+                      <Sparkles className="w-5 h-5 text-white" />
+                    </div>
                   </div>
 
+                  {/* Info */}
+                  <div className="flex-1 text-center md:text-left">
+                    <h2 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-1">
+                      {featuredMember.name}
+                    </h2>
+                    <p className="text-base text-cyan-400 font-semibold mb-2">{featuredMember.role}</p>
+                    <p className="text-sm text-slate-400 mb-3 flex items-center justify-center md:justify-start gap-2">
+                      <span className="w-1.5 h-1.5 bg-blue-400 rounded-full" />
+                      {featuredMember.institute}
+                    </p>
+                    <p className="text-sm text-slate-300 leading-relaxed mb-4">{featuredMember.bio}</p>
+
+                    {/* Expertise Tags */}
+                    <div className="flex flex-wrap gap-2 justify-center md:justify-start mb-4">
+                      {featuredMember.expertise.map((skill, idx) => (
+                        <span 
+                          key={idx}
+                          className="px-3 py-1 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 text-blue-300 rounded-full text-xs font-medium backdrop-blur-sm"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+
+                    {/* Social Links */}
+                    <div className="flex gap-2 justify-center md:justify-start">
+                      {featuredMember.social.email && (
+                        <a 
+                          href={`mailto:${featuredMember.social.email}`}
+                          className="w-10 h-10 rounded-full bg-slate-800/50 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-blue-400 hover:border-blue-500 hover:bg-blue-500/10 transition-all"
+                        >
+                          <Mail className="w-4 h-4" />
+                        </a>
+                      )}
+                      {featuredMember.social.github && (
+                        <a 
+                          href={featuredMember.social.github}
+                          className="w-10 h-10 rounded-full bg-slate-800/50 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-blue-400 hover:border-blue-500 hover:bg-blue-500/10 transition-all"
+                        >
+                          <Github className="w-4 h-4" />
+                        </a>
+                      )}
+                      {featuredMember.social.linkedin && (
+                        <a 
+                          href={featuredMember.social.linkedin}
+                          className="w-10 h-10 rounded-full bg-slate-800/50 border border-slate-700 flex items-center justify-center text-slate-400 hover:text-blue-400 hover:border-blue-500 hover:bg-blue-500/10 transition-all"
+                        >
+                          <Linkedin className="w-4 h-4" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Team Grid - Other Members */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+          {otherMembers.length > 0 ? (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
+            >
+              {otherMembers.map((member, index) => (
+                <motion.div
+                  key={member.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  className="group bg-slate-900/50 backdrop-blur-sm border border-blue-500/20 rounded-2xl p-5 hover:border-blue-500/40 transition-all duration-300 hover:shadow-xl hover:shadow-blue-500/10"
+                >
+                  {/* Avatar */}
+                  <div className="flex items-start gap-3 mb-3">
+                    <div className="w-14 h-14 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform">
+                      <span className="text-lg font-bold text-white">{getInitials(member.name)}</span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-base font-bold text-white mb-0.5 group-hover:text-blue-400 transition-colors">
+                        {member.name}
+                      </h3>
+                      <p className="text-xs text-cyan-400 font-medium">{member.role}</p>
+                    </div>
+                  </div>
+
+                  {/* Institute */}
+                  <p className="text-xs text-slate-400 mb-2 flex items-center gap-1.5">
+                    <span className="w-1 h-1 bg-blue-400 rounded-full" />
+                    {member.institute}
+                  </p>
+
                   {/* Bio */}
-                  <p className="text-sm text-gray-400 text-center mb-4 leading-relaxed">
+                  <p className="text-slate-300 text-xs leading-relaxed mb-3">
                     {member.bio}
                   </p>
 
                   {/* Expertise Tags */}
-                  <div className="flex flex-wrap gap-2 justify-center mb-4">
-                    {member.expertise.map((exp, idx) => (
-                      <span
+                  <div className="flex flex-wrap gap-1.5 mb-3">
+                    {member.expertise.slice(0, 3).map((skill, idx) => (
+                      <span 
                         key={idx}
-                        className="px-2 py-1 bg-white/5 border border-white/10 rounded text-xs text-gray-400"
+                        className="px-2 py-0.5 bg-blue-500/10 border border-blue-500/20 text-blue-400 rounded-full text-xs"
                       >
-                        {exp}
+                        {skill}
                       </span>
                     ))}
                   </div>
 
                   {/* Social Links */}
-                  <div className="flex justify-center gap-3">
+                  <div className="flex gap-2 pt-3 border-t border-slate-800">
                     {member.social.email && (
-                      <a
+                      <a 
                         href={`mailto:${member.social.email}`}
-                        className="p-2 bg-[#222] hover:bg-[#2a2a2a] rounded-lg text-gray-400 hover:text-pink-400 transition-all"
+                        className="w-8 h-8 rounded-lg bg-slate-800/50 flex items-center justify-center text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all"
                       >
-                        <Mail className="w-4 h-4" />
-                      </a>
-                    )}
-                    {member.social.linkedin && (
-                      <a
-                        href={member.social.linkedin}
-                        className="p-2 bg-[#222] hover:bg-[#2a2a2a] rounded-lg text-gray-400 hover:text-pink-400 transition-all"
-                      >
-                        <Linkedin className="w-4 h-4" />
+                        <Mail className="w-3.5 h-3.5" />
                       </a>
                     )}
                     {member.social.github && (
-                      <a
+                      <a 
                         href={member.social.github}
-                        className="p-2 bg-[#222] hover:bg-[#2a2a2a] rounded-lg text-gray-400 hover:text-pink-400 transition-all"
+                        className="w-8 h-8 rounded-lg bg-slate-800/50 flex items-center justify-center text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all"
                       >
-                        <Github className="w-4 h-4" />
+                        <Github className="w-3.5 h-3.5" />
+                      </a>
+                    )}
+                    {member.social.linkedin && (
+                      <a 
+                        href={member.social.linkedin}
+                        className="w-8 h-8 rounded-lg bg-slate-800/50 flex items-center justify-center text-slate-400 hover:text-blue-400 hover:bg-blue-500/10 transition-all"
+                      >
+                        <Linkedin className="w-3.5 h-3.5" />
                       </a>
                     )}
                   </div>
-                </div>
+                </motion.div>
               ))}
-            </div>
+            </motion.div>
           ) : (
             <div className="text-center py-16">
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-800/50 mb-4">
-                <Search className="w-8 h-8 text-gray-600" />
+              <div className="w-16 h-16 bg-slate-800/50 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Search className="w-8 h-8 text-slate-600" />
               </div>
-              <h3 className="text-xl font-semibold text-white mb-2">No team members found</h3>
-              <p className="text-sm text-gray-400 mb-4">No team members found matching your search.</p>
-              <button
-                onClick={() => handleSearch('')}
-                className="text-pink-400 hover:text-pink-300 font-medium text-sm"
-              >
-                Clear search
-              </button>
+              <p className="text-slate-400 text-sm">No team members found matching your search.</p>
             </div>
           )}
         </div>
-      </section>
 
-      {/* Open Positions */}
-      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-[#0a0a0a] to-[#0f0f0f]">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold text-white mb-3">
+        {/* Join Us Section */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="bg-gradient-to-br from-blue-500/10 via-cyan-500/10 to-blue-500/10 backdrop-blur-sm border border-blue-500/20 rounded-3xl p-8 text-center"
+          >
+            <div className="flex items-center justify-center gap-2 mb-4">
+              <UserPlus className="w-6 h-6 text-blue-400" />
+              <Sparkles className="w-5 h-5 text-cyan-400 animate-pulse" />
+            </div>
+            <h2 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-3">
               Join Our Team
             </h2>
-            <p className="text-base text-gray-400 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-slate-300 text-sm max-w-2xl mx-auto mb-6">
               Interested in volunteering? Help us organize events, create content, manage community, or build our technical infrastructure. We're always looking for passionate contributors!
             </p>
-          </div>
 
-          <div className="grid md:grid-cols-2 gap-6 mb-8">
-            {openPositions.map((position, index) => (
-              <div
-                key={index}
-                className="group bg-[#1a1a1a]/60 backdrop-blur-sm border border-white/10 hover:border-cyan-500/30 rounded-xl p-6 transition-all duration-300 hover:-translate-y-1"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-lg font-bold text-white mb-1 group-hover:text-cyan-400 transition-colors">
-                      {position.title}
-                    </h3>
-                    <p className="text-sm text-gray-400">
-                      {position.department} • {position.type}
-                    </p>
-                  </div>
-                  <span className="px-3 py-1 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full text-xs font-semibold">
-                    Open
-                  </span>
+            {/* Open Positions */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+              {openPositions.map((position, index) => (
+                <div 
+                  key={index}
+                  className="bg-slate-900/50 border border-blue-500/20 rounded-xl p-3 hover:border-blue-500/40 transition-all"
+                >
+                  <h3 className="font-semibold text-sm text-white mb-1">{position.title}</h3>
+                  <p className="text-xs text-slate-400">
+                    {position.department} • {position.type}
+                  </p>
                 </div>
-                <p className="text-sm text-gray-400 mb-4 leading-relaxed">
-                  We're currently looking for:
-                </p>
-                <button className="w-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-blue-600 text-white rounded-lg font-semibold text-sm hover:from-cyan-400 hover:to-blue-500 transition-all duration-300 shadow-lg shadow-cyan-500/30">
-                  Apply Now
-                </button>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
 
-          <div className="text-center">
-            <div className="inline-flex items-center gap-2 text-sm text-gray-400 mb-4">
-              <UserPlus className="w-4 h-4 text-cyan-400" />
-              Don't see a position that fits? We'd still love to hear from you!
-            </div>
-            <div>
-              <button className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-cyan-500/30 text-white rounded-full font-semibold text-sm transition-all duration-300">
-                <Mail className="w-4 h-4" />
-                Get in Touch
-              </button>
-            </div>
-          </div>
+            <a
+              href={`mailto:${SANGYAN_CONFIG.contact.email}`}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm rounded-xl hover:from-blue-600 hover:to-cyan-600 transition-all shadow-lg shadow-blue-500/25 font-semibold"
+            >
+              <Mail className="w-4 h-4" />
+              Get in Touch
+            </a>
+          </motion.div>
         </div>
-      </section>
 
-      <Newsletter />
+        <Newsletter />
+      </div>
       <Footer />
-    </div>
+    </>
   );
 };
 

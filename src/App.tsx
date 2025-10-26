@@ -6,6 +6,8 @@ import ErrorBoundary from './components/ErrorBoundary';
 import LoadingSpinner from './components/LoadingSpinner';
 import ProtectedRoute from './components/ProtectedRoute';
 import './index.css';
+import Profile from './pages/Profile';
+import ParasWallet from './pages/ParasWallet';
 
 // Lazy load pages for better performance
 const SangyanHome = lazy(() => import('./pages/SangyanHome'));
@@ -42,21 +44,49 @@ function App() {
       <Router>
         <Suspense fallback={<PageLoader />}>
           <Routes>
+            {/* Public routes WITHOUT Layout (they have their own Navbar/Footer) */}
+            <Route path="/" element={<SangyanHome />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+
+            {/* Public routes WITH Layout */}
             <Route element={<LayoutWrapper />}>
-              {/* Public routes */}
-              <Route path="/" element={<SangyanHome />} />
               <Route path="/about" element={<About />} />
-              <Route path="/blog" element={<BlogList />} />
-              <Route path="/blog/:id" element={<BlogDetail />} />
-              <Route path="/events" element={<Events />} />
               <Route path="/team" element={<Team />} />
-              <Route path="/resources" element={<Resources />} />
-              
-              {/* Auth routes */}
-              <Route path="/login" element={<Login />} />
-              <Route path="/signup" element={<Signup />} />
-              
-              {/* Protected routes */}
+
+              {/* Protected routes - require authentication */}
+              <Route
+                path="/blog"
+                element={
+                  <ProtectedRoute>
+                    <BlogList />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/blog/:id"
+                element={
+                  <ProtectedRoute>
+                    <BlogDetail />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/events"
+                element={
+                  <ProtectedRoute>
+                    <Events />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/resources"
+                element={
+                  <ProtectedRoute>
+                    <Resources />
+                  </ProtectedRoute>
+                }
+              />
               <Route
                 path="/membership"
                 element={
@@ -65,9 +95,25 @@ function App() {
                   </ProtectedRoute>
                 }
               />
+              <Route
+                path="/profile"
+                element={
+                  <ProtectedRoute>
+                    <Profile />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/paras-wallet"
+                element={
+                  <ProtectedRoute>
+                    <ParasWallet />
+                  </ProtectedRoute>
+                }
+              />
             </Route>
-            
-            {/* 404 route outside Layout if you want it without navbar/footer */}
+
+            {/* 404 route */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
